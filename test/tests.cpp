@@ -10,13 +10,11 @@ using ::testing::_;
 using ::testing::Mock;
 using ::testing::Invoke;
 
-// Mock класс для TimerClient
 class MockTimerClient : public TimerClient {
 public:
     MOCK_METHOD(void, Timeout, (), (override));
 };
 
-// Mock класс для Door
 class MockDoor : public Door {
 public:
     MOCK_METHOD(void, lock, (), (override));
@@ -24,7 +22,6 @@ public:
     MOCK_METHOD(bool, isDoorOpened, (), (override));
 };
 
-// Test fixture для TimedDoor
 class TimedDoorTest : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -38,7 +35,6 @@ protected:
     TimedDoor* door;
 };
 
-// Test fixture для DoorTimerAdapter
 class DoorTimerAdapterTest : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -55,7 +51,6 @@ protected:
     DoorTimerAdapter* adapter;
 };
 
-// Test fixture для Timer
 class TimerTest : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -72,7 +67,6 @@ protected:
     Timer* timer;
 };
 
-// Тесты для TimedDoor
 TEST_F(TimedDoorTest, ConstructorSetsTimeoutCorrectly) {
     EXPECT_EQ(door->getTimeOut(), 100);
 }
@@ -108,7 +102,6 @@ TEST_F(TimedDoorTest, MultipleUnlockAndLockOperations) {
     EXPECT_FALSE(door->isDoorOpened());
 }
 
-// Тесты для DoorTimerAdapter
 TEST_F(DoorTimerAdapterTest, TimeoutThrowsExceptionWhenDoorIsOpened) {
     timedDoor->unlock();
     EXPECT_THROW(adapter->Timeout(), std::runtime_error);
@@ -131,11 +124,9 @@ TEST_F(DoorTimerAdapterTest, TimeoutAfterUnlockThenLock) {
     EXPECT_NO_THROW(adapter->Timeout());
 }
 
-// Тесты для Timer с использованием моков
 TEST_F(TimerTest, TregisterCallsTimeoutOnClient) {
     EXPECT_CALL(*mockClient, Timeout()).Times(1);
     
-    // Используем небольшой таймаут для теста
     timer->tregister(1, mockClient);
 }
 
@@ -148,27 +139,21 @@ TEST_F(TimerTest, TregisterWithLongTimeoutStillCallsTimeout) {
     timer->tregister(10, mockClient);
 }
 
-// Интеграционный тест: полный сценарий работы
 TEST(IntegrationTest, FullDoorOperationScenario) {
     TimedDoor door(50);
     
-    // Изначально дверь закрыта
     EXPECT_FALSE(door.isDoorOpened());
     
-    // Открываем дверь
     door.unlock();
     EXPECT_TRUE(door.isDoorOpened());
     
-    // Закрываем дверь
     door.lock();
     EXPECT_FALSE(door.isDoorOpened());
     
-    // Снова открываем
     door.unlock();
     EXPECT_TRUE(door.isDoorOpened());
 }
 
-// Тест проверки выброса исключения после таймаута
 TEST(TimeoutExceptionTest, ExceptionThrownAfterTimeoutIfDoorStillOpen) {
     TimedDoor door(50);
     DoorTimerAdapter adapter(door);
@@ -176,23 +161,19 @@ TEST(TimeoutExceptionTest, ExceptionThrownAfterTimeoutIfDoorStillOpen) {
     
     door.unlock();
     
-    // Таймер вызовет Timeout через 50 мс
-    // В реальном сценарии это должно выбросить исключение
     EXPECT_THROW(adapter.Timeout(), std::runtime_error);
 }
 
-// Тест: исключение НЕ выбрасывается, если дверь закрыта до таймаута
 TEST(TimeoutExceptionTest, NoExceptionIfDoorClosedBeforeTimeout) {
     TimedDoor door(50);
     DoorTimerAdapter adapter(door);
     
     door.unlock();
-    door.lock();  // Закрываем дверь до таймаута
+    door.lock();
     
     EXPECT_NO_THROW(adapter.Timeout());
 }
 
-// Тест для проверки работы нескольких адаптеров
 TEST(MultiAdapterTest, MultipleAdaptersWorkIndependently) {
     TimedDoor door1(100);
     TimedDoor door2(200);
@@ -206,13 +187,11 @@ TEST(MultiAdapterTest, MultipleAdaptersWorkIndependently) {
     EXPECT_NO_THROW(adapter2.Timeout());
 }
 
-// Дополнительный тест для TimedDoor: getTimeOut возвращает корректное значение
 TEST_F(TimedDoorTest, GetTimeOutReturnsCorrectValue) {
     TimedDoor customDoor(300);
     EXPECT_EQ(customDoor.getTimeOut(), 300);
 }
 
-// Тест для проверки цепочки вызовов: открытие двери -> таймер -> исключение
 TEST(ChainTest, OpenDoorTimerThrowsException) {
     TimedDoor door(1);
     DoorTimerAdapter adapter(door);
