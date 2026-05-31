@@ -1,54 +1,53 @@
-// Copyright 2021 GHA Test Team
+// Copyright 2025 UNN-IASR
 #include "TimedDoor.h"
 #include <stdexcept>
 #include <thread>
 #include <chrono>
 
-DoorTimerAdapter::DoorTimerAdapter(TimedDoor& d) : door(d) {}
+DoorBell::DoorBell(TimedEntrance& e) : entry(e) {}
 
-void DoorTimerAdapter::Timeout() {
-    if (door.isDoorOpened()) {
-        door.throwState();
+void DoorBell::notifyTimeout() {
+    if (entry.isOpen()) {
+        entry.raiseAlert();
     }
 }
 
-TimedDoor::TimedDoor(int timeout) : iTimeout(timeout), isOpened(false) {
-    adapter = new DoorTimerAdapter(*this);
+TimedEntrance::TimedEntrance(int timeout) : duration(timeout), opened(false) {
+    bell = new DoorBell(*this);
 }
 
-TimedDoor::~TimedDoor() {
-    delete adapter;
+TimedEntrance::~TimedEntrance() {
+    delete bell;
 }
 
-bool TimedDoor::isDoorOpened() {
-    return isOpened;
+bool TimedEntrance::isOpen() {
+    return opened;
 }
 
-void TimedDoor::unlock() {
-    isOpened = true;
+void TimedEntrance::release() {
+    opened = true;
 }
 
-void TimedDoor::lock() {
-    isOpened = false;
+void TimedEntrance::secure() {
+    opened = false;
 }
 
-int TimedDoor::getTimeOut() const {
-    return iTimeout;
+int TimedEntrance::getDuration() const {
+    return duration;
 }
 
-void TimedDoor::throwState() {
-    throw std::runtime_error("Door is still opened after timeout!");
+void TimedEntrance::raiseAlert() {
+    throw std::runtime_error("Entrance remains unsecured after timeout!");
 }
 
-void Timer::sleep(int milliseconds) {
+void Clock::wait(int milliseconds) {
     std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
 }
 
-void Timer::tregister(int timeout, TimerClient* client) {
-    this->client = client;
-    sleep(timeout);
-    if (client != nullptr) {
-        client->Timeout();
+void Clock::setTimer(int timeout, AlarmListener* client) {
+    this->listener = client;
+    wait(timeout);
+    if (listener != nullptr) {
+        listener->notifyTimeout();
     }
 }
-

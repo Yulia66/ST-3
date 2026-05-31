@@ -1,8 +1,7 @@
-// Copyright 2020 GHA Test Team
-
+// Copyright 2025 UNN-IASR
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

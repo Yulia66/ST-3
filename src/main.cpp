@@ -1,11 +1,9 @@
-// Copyright 2021 GHA Test Team
+// Copyright 2025 UNN-IASR
 #include "TimedDoor.h"
-#include <iostream>
 
 int main() {
-  TimedDoor tDoor(5);
-  tDoor.lock();
-  tDoor.unlock();
-
-  return 0;
+    TimedEntrance entry(5);
+    entry.secure();
+    entry.release();
+    return 0;
 }

@@ -1,55 +1,54 @@
-// Copyright 2021 GHA Test Team
-
+// Copyright 2025 UNN-IASR
 #ifndef INCLUDE_TIMEDDOOR_H_
 #define INCLUDE_TIMEDDOOR_H_
 
-class DoorTimerAdapter;
-class Timer;
-class Door;
-class TimedDoor;
+class SmartDoor;
+class DoorBell;
+class Entrance;
+class TimedEntrance;
 
-class TimerClient {
+class AlarmListener {
  public:
-  virtual void Timeout() = 0;
-  virtual ~TimerClient() = default;
+  virtual void notifyTimeout() = 0;
+  virtual ~AlarmListener() = default;
 };
 
-class Door {
+class Entrance {
  public:
-  virtual void lock() = 0;
-  virtual void unlock() = 0;
-  virtual bool isDoorOpened() = 0;
-  virtual ~Door() = default;
+  virtual void secure() = 0;
+  virtual void release() = 0;
+  virtual bool isOpen() = 0;
+  virtual ~Entrance() = default;
 };
 
-class DoorTimerAdapter : public TimerClient {
+class DoorBell : public AlarmListener {
  private:
-  TimedDoor& door;
+  TimedEntrance& entry;
  public:
-  explicit DoorTimerAdapter(TimedDoor&);
-  void Timeout() override;
+  explicit DoorBell(TimedEntrance&);
+  void notifyTimeout() override;
 };
 
-class TimedDoor : public Door {
+class TimedEntrance : public Entrance {
  private:
-  DoorTimerAdapter * adapter;
-  int iTimeout;
-  bool isOpened;
+  DoorBell* bell;
+  int duration;
+  bool opened;
  public:
-  explicit TimedDoor(int);
-  ~TimedDoor();
-  bool isDoorOpened() override;
-  void unlock() override;
-  void lock() override;
-  int  getTimeOut() const;
-  void throwState();
+  explicit TimedEntrance(int);
+  ~TimedEntrance();
+  bool isOpen() override;
+  void release() override;
+  void secure() override;
+  int getDuration() const;
+  void raiseAlert();
 };
 
-class Timer {
-  TimerClient *client = nullptr;
-  void sleep(int);
+class Clock {
+  AlarmListener* listener = nullptr;
+  void wait(int);
  public:
-  void tregister(int, TimerClient*);
+  void setTimer(int, AlarmListener*);
 };
 
 #endif  // INCLUDE_TIMEDDOOR_H_
